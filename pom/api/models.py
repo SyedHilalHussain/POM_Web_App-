@@ -184,3 +184,15 @@ class KanbanComputation(models.Model):
 
     def __str__(self):
         return self.name
+
+class ErrorAnalysis(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="Error_analysis")
+    name = models.CharField(max_length=255)
+    input_data = models.JSONField()  # Will include actual and forecast values of past periods
+    output_data = models.JSONField(null=True, blank=True)  # Will include tracking, details and error analysis and graph
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    chart_url = models.TextField()
+
+    def __str__(self):
+        return self.name
