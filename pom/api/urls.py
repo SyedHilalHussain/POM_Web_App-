@@ -60,8 +60,8 @@ path('calculate_eoq/', views.calculate_eoq_only, name='calculate_eoq'),
     path('list_abc_analyses/', views.list_abc_analyses, name='list_abc_analyses'),
     path('retrieve_abc_analysis/<int:file_id>/', views.retrieve_abc_analysis, name='retrieve_abc_analysis'),
 # Kanban Computation
-    path('kanban_computation/', views.save_kanban_computation, name='save_kanban_computation'),
-    path('save_kanban_computation/<int:file_id>/', views.update_kanban_computation, name='update_kanban_computation'),
+    path('save_kanban_computation/', views.save_kanban_computation, name='save_kanban_computation'),
+    path('update_kanban_computation/<int:file_id>/', views.update_kanban_computation, name='update_kanban_computation'),
     path('list_kanban_computations/', views.list_kanban_computations, name='list_kanban_computations'),
     path('retrieve_kanban_computation/<int:file_id>/', views.retrieve_kanban_computation, name='retrieve_kanban_computation'),
 

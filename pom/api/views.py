@@ -1641,46 +1641,70 @@ def calculate_kanban(input_data):
 
     Args:
         input_data: Dictionary containing:
-            - computationType: 'size' or 'number'
+            - mode: 'known' or 'compute'
             - parameters: Dictionary of parameters
 
     Returns:
         Dictionary with computation results
     """
     try:
-        computation_type = input_data.get('computationType')
+        mode = input_data.get('mode')
         params = input_data.get('parameters', {})
 
-        daily_demand = params.get('dailyDemand', 0)
-        lead_time = params.get('leadTime', 0)
-        days_per_year = params.get('daysPerYear', 30)
-
-        if computation_type == 'size':
+        if mode == 'known':
+            # Known values calculation
+            daily_demand = params.get('dailyDemand', 0)
+            lead_time = params.get('leadTime', 0)
             safety_stock_percent = params.get('safetyStockPercent', 0)
-            # Calculate Kanban size
-            safety_stock = (daily_demand * lead_time) * (safety_stock_percent / 100)
-            kanban_size = (daily_demand * lead_time) + safety_stock
-            number_of_kanbans = None  # Not calculated in this mode
-        else:
-            safety_stock = params.get('safetyStock', 0)
             kanban_size = params.get('kanbanSize', 0)
-            # Calculate number of Kanbans
-            number_of_kanbans = ((daily_demand * lead_time) + safety_stock) / kanban_size
-            kanban_size = None  # Not calculated in this mode
 
-        return {
-            'status': 'success',
-            'data': {
-                'kanbanSize': kanban_size,
-                'numberOfKanbans': number_of_kanbans,
-                'dailyDemand': daily_demand,
-                'leadTime': lead_time,
-                'daysPerYear': days_per_year
+            safety_stock = (daily_demand * lead_time) * (safety_stock_percent / 100)
+            number_of_kanbans = ((daily_demand * lead_time) + safety_stock) / kanban_size if kanban_size else 0
+
+            return {
+                'status': 'success',
+                'data': {
+                    'kanbanSize': kanban_size,
+                    'numberOfKanbans': number_of_kanbans,
+                    'dailyDemand': daily_demand,
+                    'leadTime': lead_time,
+                    'safetyStockPercent': safety_stock_percent
+                }
             }
-        }
+        else:
+            # Compute mode calculation
+            setup_cost = params.get('setupCost', 0)
+            annual_holding_cost = params.get('annualHoldingCost', 0)
+            daily_production = params.get('dailyProduction', 0)
+            annual_usage = params.get('annualUsage', 0)
+            daily_usage = params.get('dailyUsage', 0)
+            lead_time = params.get('leadTime', 0)
+            safety_stock = params.get('safetyStock', 0)
+            days_per_year = params.get('daysPerYear', 30)
+
+            # Calculate Kanban size (EPQ formula)
+            demand_rate = daily_usage
+            production_rate = daily_production
+            holding_cost = annual_holding_cost / days_per_year
+
+            kanban_size = sqrt( (2 * setup_cost * demand_rate) /(holding_cost * (1 - (demand_rate / production_rate))))
+
+            # Calculate number of Kanbans
+            number_of_kanbans = ((daily_usage * lead_time) + safety_stock) / kanban_size
+
+            return {
+                'status': 'success',
+                'data': {
+                    'kanbanSize': kanban_size,
+                    'numberOfKanbans': number_of_kanbans,
+                    'daysPerYear': days_per_year,
+                    'setupCost': setup_cost,
+                    'annualHoldingCost': annual_holding_cost
+                }
+            }
+
     except Exception as e:
         return {'status': 'error', 'message': str(e)}
-
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -1689,18 +1713,18 @@ def save_kanban_computation(request):
     try:
         user = request.user
         name = request.data.get('name')
-        computation_type = request.data.get('computationType')
+        mode = request.data.get('mode')
         parameters = request.data.get('parameters')
 
-        if not name or not computation_type or not parameters:
+        if not name or not mode or not parameters:
             return Response(
-                {'error': 'Name, computationType and parameters are required.'},
+                {'error': 'Name, mode and parameters are required.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         # Prepare input data
         input_data = {
-            'computationType': computation_type,
+            'mode': mode,
             'parameters': parameters
         }
 
@@ -1738,12 +1762,12 @@ def update_kanban_computation(request, file_id):
 
         # Get updated data
         name = request.data.get('name', kanban.name)
-        computation_type = request.data.get('computationType', kanban.input_data['computationType'])
+        mode = request.data.get('mode', kanban.input_data['mode'])
         parameters = request.data.get('parameters', kanban.input_data['parameters'])
 
         # Prepare input data
         input_data = {
-            'computationType': computation_type,
+            'mode': mode,
             'parameters': parameters
         }
 

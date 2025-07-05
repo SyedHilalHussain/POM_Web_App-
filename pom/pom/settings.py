@@ -92,7 +92,8 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': '',  # Leave it blank if there's no password in XAMPP
         'HOST': 'localhost',
-        'PORT': '3306',
+        # port changed
+        'PORT': '3307',
     }
 }
 
