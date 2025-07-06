@@ -24,10 +24,10 @@ git checkout sAsiya                            # Switch to sAsiya branch
 git pull origin sAsiya                         # Pull latest changes from remote sAsiya
 git fetch origin                               # Get latest from remote (required before merging remote branches)
 git merge origin/fTooba                        # Merge remote fTooba into local sAsiya
-# OR if you already have local fTooba branch:
+#### OR if you already have local fTooba branch:
 git merge fTooba                               # Merge local fTooba into sAsiya
 git commit -m "Merged fTooba into sAsiya"      # Commit the merge (if needed)
 git push --set-upstream origin sAsiya          # Push to remote and set tracking (only needed the first time)
-# Or if not first time 
+#### Or if not first time 
 git push
 
