@@ -7,6 +7,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from django.shortcuts import render, get_object_or_404
 import json
+import numpy as np
+import pandas as pd
+
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -15,8 +18,16 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
-from .models import CustomUser, AnalysisFile,KanbanComputation, ReorderFile, PreferenceMatrix,ABCAnalysis,DecisionTables, CrossVolume,MultiProductBreakEven,EOQModel
-from .serializers import UserProfileSerializer, KanbanComputationSerializer ,AnalysisFileSerializer,ABCAnalysisSerializer, ReorderFileSerializer,DecisionTablesSerializer,MultiProductBreakEvenSerializer,EOQSerializer, PreferenceMatrixSerializer, CrossVolumeSerializer
+from .models import CustomUser, AnalysisFile,KanbanComputation, ReorderFile, PreferenceMatrix,ABCAnalysis,DecisionTables, CrossVolume,MultiProductBreakEven,EOQModel, ErrorAnalysis
+from .serializers import UserProfileSerializer, KanbanComputationSerializer ,AnalysisFileSerializer,ABCAnalysisSerializer, ReorderFileSerializer,DecisionTablesSerializer,MultiProductBreakEvenSerializer,EOQSerializer, PreferenceMatrixSerializer, CrossVolumeSerializer, ErrorAnalysisSerializer
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import MyTokenObtainPairSerializer
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+
 # Utility function to create JWT tokens
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -1810,4 +1821,224 @@ def retrieve_kanban_computation(request, file_id):
     computation = get_object_or_404(KanbanComputation, id=file_id, user=request.user)
     serializer = KanbanComputationSerializer(computation)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # Error analysis from forecasting
+
+def compute_error_metrics(actual, forecast):
+    error = actual - forecast
+    abs_error = np.abs(error)
+    squared_error = error ** 2
+    pct_error = (abs_error / np.abs(actual)) * 100
+
+    mean_error = np.mean(error)
+    squared_error_from_mean = (error - mean_error) ** 2
+    std_dev = round(np.sqrt(np.sum(squared_error_from_mean) / (len(error) - 1)), 2)
+
+    CFE = np.sum(error)
+    MAD = np.mean(abs_error)
+    MSE = np.mean(squared_error)
+    MAPE = np.mean(pct_error)
+
+    cum_fore_error = np.cumsum(error)
+    MAD_series = [np.mean(abs_error[:i+1]) if i > 0 else abs_error[0] for i in range(len(abs_error))]
+    tracking_signal = cum_fore_error / MAD_series
+
+    periods = [f"Past Period {i+1}" for i in range(len(actual))]
+
+    error_analysis_table = []
+    for i, label in enumerate(periods):
+        error_analysis_table.append({
+            "period": label,
+            "actual": float(actual[i]),
+            "forecast": float(forecast[i]),
+            "error": float(error[i]),
+            "|error|": float(abs_error[i]),
+            "error^2": float(squared_error[i]),
+            "pct_error": round(float(pct_error[i]), 6),
+            "(E - Ebar)^2": round(float(squared_error_from_mean[i]), 6)
+        })
+
+    # Add TOTALS row
+    error_analysis_table.append({
+        "period": "TOTALS",
+        "actual": float(np.sum(actual)),
+        "forecast": float(np.sum(forecast)),
+        "error": float(np.sum(error)),
+        "|error|": float(np.sum(abs_error)),
+        "error^2": float(np.sum(squared_error)),
+        "pct_error": round(float(np.sum(pct_error)), 6),
+        "(E - Ebar)^2": round(float(np.sum(squared_error_from_mean)), 6)
+    })
+
+    # Add AVERAGES row
+    error_analysis_table.append({
+        "period": "AVERAGES",
+        "actual": float(np.mean(actual)),
+        "forecast": float(np.mean(forecast)),
+        "error": float(mean_error),
+        "|error|": float(MAD),
+        "error^2": float(MSE),
+        "pct_error": round(float(MAPE), 6),
+        "(E - Ebar)^2": None  # or use None if you prefer null
+    })
+
+    control_table = []
+    for i, label in enumerate(periods):
+        control_table.append({
+            "period": label,
+            "actual": float(actual[i]),
+            "forecast": float(forecast[i]),
+            "error": float(error[i]),
+            "cum_fore_error": float(cum_fore_error[i]),
+            "MAD": float(MAD_series[i]),
+            "tracking_signal": round(float(tracking_signal[i]), 3)
+        })
+
+    summary_metrics = {
+        "CFE": float(CFE),
+        "Mean Bias": float(mean_error),
+        "MAD": float(MAD),
+        "MSE": float(MSE),
+        "Std Dev of Errors": float(std_dev),
+        "MAPE": round(float(MAPE), 3)
+    }
+
+    return {
+        "summary_metrics": summary_metrics,
+        "error_analysis_table": error_analysis_table,
+        "control_table": control_table
+    }
+
+def generate_error_analysis_chart(actual, forecast):
+    periods = np.arange(1, len(actual)+1)
+    plt.figure(figsize=(10,6))
+    plt.plot(periods, actual, label="Actual", marker="o")
+    plt.plot(periods, forecast, label="Forecast", marker="x")
+    plt.title("Actual vs Forecast")
+    plt.xlabel("Period")
+    plt.ylabel("Value")
+    plt.legend()
+    plt.grid(True)
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+    chart_url = base64.b64encode(buf.getvalue()).decode("utf-8")
+    plt.close()
+    return f"data:image/png;base64,{chart_url}"
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def error_analysis_preview(request):
+    try:
+        input_data = request.data.get('input_data')
+        actual = np.array(input_data.get('actual'))
+        forecast = np.array(input_data.get('forecast'))
+
+        if len(actual) != len(forecast):
+            return Response({'error': 'Actual and forecast arrays must match.'}, status=400)
+
+        output_data = compute_error_metrics(actual, forecast)
+        chart_url = generate_error_analysis_chart(actual, forecast)
+
+        return Response({
+            'input_data': input_data,
+            'output_data': output_data,
+            'chart_url': chart_url
+        }, status=200)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_error_analysis(request):
+    try:
+        user = request.user
+        name = request.data.get('name')
+        input_data = request.data.get('input_data')
+
+        if not name or not input_data:
+            return Response({'error': 'Name and input_data are required.'}, status=400)
+
+        actual = np.array(input_data.get('actual'))
+        forecast = np.array(input_data.get('forecast'))
+
+        if len(actual) != len(forecast):
+            return Response({'error': 'Actual and forecast lengths must match.'}, status=400)
+
+        output_data = compute_error_metrics(actual, forecast)
+        chart_url = generate_error_analysis_chart(actual, forecast)
+
+        analysis = ErrorAnalysis.objects.create(
+            user=user,
+            name=name,
+            input_data=input_data,
+            output_data=output_data,
+            chart_url=chart_url
+        )
+
+        serializer = ErrorAnalysisSerializer(analysis)
+        return Response(serializer.data, status=201)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_error_analysis(request, file_id):
+    try:
+        analysis = ErrorAnalysis.objects.get(id=file_id, user=request.user)
+        name = request.data.get('name', analysis.name)
+        input_data = request.data.get('input_data', analysis.input_data)
+
+        actual = np.array(input_data.get('actual'))
+        forecast = np.array(input_data.get('forecast'))
+
+        if len(actual) != len(forecast):
+            return Response({'error': 'Actual and forecast lengths must match.'}, status=400)
+
+        output_data = compute_error_metrics(actual, forecast)
+        chart_url = generate_error_analysis_chart(actual, forecast)
+
+        analysis.name = name
+        analysis.input_data = input_data
+        analysis.output_data = output_data
+        analysis.chart_url = chart_url
+        analysis.save()
+
+        serializer = ErrorAnalysisSerializer(analysis)
+        return Response(serializer.data, status=200)
+
+    except ErrorAnalysis.DoesNotExist:
+        return Response({'error': 'File not found'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_error_analyses(request):
+    files = ErrorAnalysis.objects.filter(user=request.user)
+    serializer = ErrorAnalysisSerializer(files, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def retrieve_error_analysis(request, id):
+    try:
+        file = ErrorAnalysis.objects.get(id=id, user=request.user)
+        serializer = ErrorAnalysisSerializer(file)
+        return Response(serializer.data)
+    except ErrorAnalysis.DoesNotExist:
+        return Response({'error': 'Not found'}, status=404)
+
+
+
+
+
 

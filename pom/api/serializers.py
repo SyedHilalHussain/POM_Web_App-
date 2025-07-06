@@ -1,11 +1,20 @@
 # api/serializers.py
 from rest_framework import serializers
-from .models import CustomUser, AnalysisFile, ReorderFile,KanbanComputation , PreferenceMatrix, DecisionTables, CrossVolume, MultiProductBreakEven, EOQModel,ABCAnalysis
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from .models import CustomUser, AnalysisFile, ReorderFile, KanbanComputation , PreferenceMatrix, DecisionTables, CrossVolume, MultiProductBreakEven, EOQModel,ABCAnalysis, ErrorAnalysis
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['email','username', 'first_name', 'last_name']  # Adjust fields as needed
+
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        # Replace 'username' with 'email'
+        attrs['username'] = attrs.get('email')
+        return super().validate(attrs)
 
 class AnalysisFileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -105,3 +114,21 @@ class KanbanComputationSerializer(serializers.ModelSerializer):
     class Meta:
         model = KanbanComputation
         fields = "__all__"
+
+class ErrorAnalysisSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the ErrorAnalysis model to handle Actual and Forecast data.
+    """
+
+    class Meta:
+        model = ErrorAnalysis
+        fields = [
+            'id',           # Primary key
+            'user',         # Related user (foreign key)
+            'name',         # Name of the analysis
+            'created_at',   # Timestamp of creation
+            'updated_at',   # Timestamp of last update
+            'input_data',   # Input parameters and probabilities (JSON)
+            'output_data',  # Calculated results (JSON)
+             'chart_url',    # Optional chart data (if any)
+        ]
