@@ -72,6 +72,7 @@ path('calculate_eoq/', views.calculate_eoq_only, name='calculate_eoq'),
     path('update_kanban_computation/<int:file_id>/', views.update_kanban_computation, name='update_kanban_computation'),
     path('list_kanban_computations/', views.list_kanban_computations, name='list_kanban_computations'),
     path('retrieve_kanban_computation/<int:file_id>/', views.retrieve_kanban_computation, name='retrieve_kanban_computation'),
+    
     # error analysis
     path('save_error_analysis/', views.save_error_analysis, name='save_error_analysis'),
     path('list_error_analysis/', views.list_error_analyses, name='list_error_analysis'),
