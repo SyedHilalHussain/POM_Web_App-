@@ -5,10 +5,6 @@ from . import views
 from .views import MyTokenObtainPairView
 
 urlpatterns = [
-    
-
-
-
     path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
 
 
@@ -73,7 +69,7 @@ path('calculate_eoq/', views.calculate_eoq_only, name='calculate_eoq'),
     path('list_kanban_computations/', views.list_kanban_computations, name='list_kanban_computations'),
     path('retrieve_kanban_computation/<int:file_id>/', views.retrieve_kanban_computation, name='retrieve_kanban_computation'),
     
-    # error analysis
+# Error analysis
     path('save_error_analysis/', views.save_error_analysis, name='save_error_analysis'),
     path('list_error_analysis/', views.list_error_analyses, name='list_error_analysis'),
     path('retrieve_error_analysis/<int:id>/', views.retrieve_error_analysis, name='retrieve_error_analysis'),
