@@ -5,12 +5,7 @@ from . import views
 from .views import MyTokenObtainPairView
 
 urlpatterns = [
-    
-
-
-
     path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
-
 
     path('register/', views.register, name='register'),
     path('login/', views.login, name='login'),
@@ -77,6 +72,12 @@ path('calculate_eoq/', views.calculate_eoq_only, name='calculate_eoq'),
     path('list_error_analysis/', views.list_error_analyses, name='list_error_analysis'),
     path('retrieve_error_analysis/<int:id>/', views.retrieve_error_analysis, name='retrieve_error_analysis'),
     path('update_error_analysis/<int:file_id>/', views.update_error_analysis, name='update_error_analysis'),
+    path('error_analysis_preview/', views.error_analysis_preview, name='error_analysis_preview'),
 
+    #regression projector
+    path('save_regression_projector/', views.save_regression_projector, name='save_regression_projector'),
+    path('update_regression_projector/<int:file_id>/', views.update_regression_projector, name='update_regression_projector'),
+    path('list_regressions_projector/', views.list_regression_projector, name='list_regressions_projector'),
+    path('retrieve_regression_projector/<int:id>/', views.retrieve_regression_projector, name='retrieve_regression_projector'),
 
 ]
