@@ -196,3 +196,14 @@ class ErrorAnalysis(models.Model):
 
     def __str__(self):
         return self.name
+
+class RegressionProjector(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="Regression_Projector")
+    name = models.CharField(max_length=255)
+    input_data = models.JSONField() 
+    output_data = models.JSONField(null=True, blank=True) 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name

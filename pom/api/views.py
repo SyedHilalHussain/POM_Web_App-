@@ -10,7 +10,7 @@ import json
 import numpy as np
 import pandas as pd
 
-import matplotlib
+import matplotlib 
 matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
@@ -21,8 +21,8 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
-from .models import CustomUser, AnalysisFile,KanbanComputation, ReorderFile, PreferenceMatrix,ABCAnalysis,DecisionTables, CrossVolume,MultiProductBreakEven,EOQModel, ErrorAnalysis
-from .serializers import UserProfileSerializer, KanbanComputationSerializer ,AnalysisFileSerializer,ABCAnalysisSerializer, ReorderFileSerializer,DecisionTablesSerializer,MultiProductBreakEvenSerializer,EOQSerializer, PreferenceMatrixSerializer, CrossVolumeSerializer, ErrorAnalysisSerializer
+from .models import CustomUser, AnalysisFile,KanbanComputation, ReorderFile, PreferenceMatrix,ABCAnalysis,DecisionTables, CrossVolume,MultiProductBreakEven,EOQModel, ErrorAnalysis, RegressionProjector
+from .serializers import UserProfileSerializer, KanbanComputationSerializer ,AnalysisFileSerializer,ABCAnalysisSerializer, ReorderFileSerializer,DecisionTablesSerializer,MultiProductBreakEvenSerializer,EOQSerializer, PreferenceMatrixSerializer, CrossVolumeSerializer, ErrorAnalysisSerializer, RegressionProjectorSerializer
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer
@@ -1825,7 +1825,7 @@ def retrieve_kanban_computation(request, file_id):
     serializer = KanbanComputationSerializer(computation)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # Error analysis from forecasting
+# Error analysis from forecasting
 
 def compute_error_metrics(actual, forecast):
     error = actual - forecast
@@ -2040,6 +2040,118 @@ def retrieve_error_analysis(request, id):
     except ErrorAnalysis.DoesNotExist:
         return Response({'error': 'Not found'}, status=404)
 
+# Regression Projector
+
+def compute_regression_output(input_data):
+    m = input_data['num_forecasts']
+    n = input_data['num_independent']
+    intercept = input_data['intercept']
+    coefficients = input_data['coefficients']
+    X = np.array(input_data['Forecasts'])  # Shape (n, m)
+
+    Y = intercept + np.dot(coefficients, X)
+
+    col_names = input_data['col_names']
+    row_names = input_data['row_names']
+
+    # Create display table like POM
+    table = []
+
+    # Intercept row
+    table.append({
+        'name': 'Intercept',
+        'coefficient': float(intercept)
+    })
+
+    # Each variable row
+    for i in range(n):
+        table.append({
+            'name': row_names[i],
+            'coefficient': float(coefficients[i]),
+            'values': [float(round(X[i][j], 2)) for j in range(m)]
+        })
+
+    # Forecast row
+    table.append({
+        'name': 'Forecast',
+        'coefficient': '',
+        'values': [float(round(Y[j], 2)) for j in range(m)]
+    })
+
+    return {
+        'forecast': [float(round(y, 2)) for y in Y],
+        'table': table,
+        'col_names': col_names,
+        'row_names': row_names
+    }
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_regression_projector(request):
+    try:
+        user = request.user
+        name = request.data.get('name')
+        input_data = request.data.get('input_data')
+
+        if not name or not input_data:
+            return Response({'error': 'Name and input_data are required.'}, status=400)
+
+        output_data = compute_regression_output(input_data)
+
+        analysis = RegressionProjector.objects.create(
+            user=user,
+            name=name,
+            input_data=input_data,
+            output_data=output_data
+        )
+
+        serializer = RegressionProjectorSerializer(analysis)
+        return Response(serializer.data, status=201)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_regression_projector(request, file_id):
+    try:
+        project = RegressionProjector.objects.get(id=file_id, user=request.user)
+        name = request.data.get('name', project.name)
+        input_data = request.data.get('input_data', project.input_data)
+
+        output_data = compute_regression_output(input_data)
+
+        project.name = name
+        project.input_data = input_data
+        project.output_data = output_data
+        project.save()
+
+        serializer = RegressionProjectorSerializer(project)
+        return Response(serializer.data, status=200)
+
+    except RegressionProjector.DoesNotExist:
+        return Response({'error': 'File not found'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_regression_projector(request):
+    files = RegressionProjector.objects.filter(user=request.user)
+    serializer = RegressionProjectorSerializer(files, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def retrieve_regression_projector(request, id):
+    try:
+        file = RegressionProjector.objects.get(id=id, user=request.user)
+        serializer = RegressionProjectorSerializer(file)
+        return Response(serializer.data)
+    except RegressionProjector.DoesNotExist:
+        return Response({'error': 'Not found'}, status=404)
 
 
 
