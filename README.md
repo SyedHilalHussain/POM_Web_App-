@@ -27,4 +27,5 @@ git push <br>
 #### Pushing code in another repository of someone else's account 
 git remote remove origin <br>
 git remote add origin https://github.com/SyedHilalHussain/POM_Web_App-.git <br>
-git push -f origin sAsiya:main
+###### git push -f origin sAsiya:main
+git push origin main --force
