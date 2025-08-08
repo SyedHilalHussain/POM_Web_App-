@@ -1,7 +1,7 @@
 # api/serializers.py
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import CustomUser, AnalysisFile, ReorderFile,KanbanComputation , PreferenceMatrix, DecisionTables, CrossVolume, MultiProductBreakEven, EOQModel,ABCAnalysis, ErrorAnalysis, RegressionProjector, EconomicProductionLotSize, TimeStudy, SampleSizeForTS
+from .models import CustomUser, AnalysisFile, ReorderFile,KanbanComputation , PreferenceMatrix, DecisionTables, CrossVolume, MultiProductBreakEven, EOQModel,ABCAnalysis, ErrorAnalysis, RegressionProjector, EconomicProductionLotSize, TimeStudy, SampleSizeForTS, ReorderNormalDist
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -192,6 +192,23 @@ class SampleSizeForTSSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SampleSizeForTS
+        fields = [
+            'id',           # Primary key
+            'user',         # Related user (foreign key)
+            'name',         # Name of the analysis
+            'created_at',   # Timestamp of creation
+            'updated_at',   # Timestamp of last update
+            'input_data',   # Input parameters and probabilities (JSON)
+            'output_data',  # Calculated results (JSON)
+        ]
+
+class ReorderNormalDistSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the ReorderNormalDist model to handle Actual and Forecast data.
+    """
+
+    class Meta:
+        model = ReorderNormalDist
         fields = [
             'id',           # Primary key
             'user',         # Related user (foreign key)

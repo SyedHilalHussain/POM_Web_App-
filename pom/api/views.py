@@ -2388,3 +2388,81 @@ def retrieve_sample_size_for_ts(request, id):
         return Response(serializer.data)
     except SampleSizeForTS.DoesNotExist:
         return Response({'error': 'Not found'}, status=404)
+
+# Reorder (Normal dist)
+from .models import ReorderNormalDist
+from .serializers import ReorderNormalDistSerializer
+from .services.ReorderNormalDist import process_reorder_normal_dist_input
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_reorder_normal_dist(request):
+    try:
+        user = request.user
+        name = request.data.get('name')
+        input_data = request.data.get('input_data')
+
+        if not name or not input_data:
+            return Response({'error': 'Name and input_data are required.'}, status=400)
+
+        result, error = process_reorder_normal_dist_input(input_data)
+        if error:
+            return Response({'error': error}, status=400)
+
+        analysis = ReorderNormalDist.objects.create(
+            user=user,
+            name=name,
+            input_data=input_data,
+            output_data=result['output_data']
+        )
+
+        serializer = ReorderNormalDistSerializer(analysis)
+        return Response(serializer.data, status=201)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_reorder_normal_dist(request, file_id):
+    try:
+        analysis = ReorderNormalDist.objects.get(id=file_id, user=request.user)
+        name = request.data.get('name', analysis.name)
+        input_data = request.data.get('input_data', analysis.input_data)
+
+        result, error = process_reorder_normal_dist_input(input_data)
+        if error:
+            return Response({'error': error}, status=400)
+
+        analysis.name = name
+        analysis.input_data = input_data
+        analysis.output_data = result['output_data']
+        analysis.save()
+
+        serializer = ReorderNormalDistSerializer(analysis)
+        return Response(serializer.data, status=200)
+
+    except ReorderNormalDist.DoesNotExist:
+        return Response({'error': 'File not found'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_reorder_normal_dist(request):
+    files = ReorderNormalDist.objects.filter(user=request.user)
+    serializer = ReorderNormalDistSerializer(files, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def retrieve_reorder_normal_dist(request, id):
+    try:
+        file = ReorderNormalDist.objects.get(id=id, user=request.user)
+        serializer = ReorderNormalDistSerializer(file)
+        return Response(serializer.data)
+    except ReorderNormalDist.DoesNotExist:
+        return Response({'error': 'Not found'}, status=404)
