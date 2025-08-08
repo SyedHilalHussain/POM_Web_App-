@@ -64,7 +64,7 @@ function BreakEvenTable({ fileId = null, fileName, isSaved, setIsSaved }) {
 
     return (
         <div>
-            <h3>Crossover/Cost-Volume Analysis</h3>
+            <h3>{fileName} - Breakeven Analysis</h3>
             <label>Volume for Analysis:</label>
             <Input
                 name="volume"

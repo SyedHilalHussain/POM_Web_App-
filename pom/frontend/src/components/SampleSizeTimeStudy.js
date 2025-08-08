@@ -309,7 +309,7 @@ const SampleSizeTimeStudy = ({
 
   return (
     <Card
-      title={fileName || "Sample Size Time Study"}
+      title={fileName + " - Sample Size Time Study" || "Sample Size Time Study"}
       style={{ maxHeight: "80vh", overflowY: "auto" }}
     >
       <Tabs

@@ -378,7 +378,7 @@ const ABCAnalysis = ({ fileId, fileName, setSelectedFile, initialConfig }) => {
 
   return (
     <Card
-      title={fileName || 'ABC Analysis'}
+      title={fileName + ' - ABC Analysis' || 'ABC Analysis'}
       extra={
         <Button type="primary" onClick={handleAddItem}>
           Add Item

@@ -342,7 +342,7 @@ const EOQAnalysis = ({ fileid, fileName, setSelectedFile, isSaved, setIsSaved })
   );
 
   return (
-    <Card title={fileName || "EOQ Analysis"} style={{ margin: 16 }}>
+    <Card title={fileName + " - EOQ Analysis"|| "EOQ Analysis"} style={{ margin: 16 }}>
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
         <TabPane tab="Input Parameters" key="input">
           {renderInputForm()}

@@ -223,7 +223,7 @@ const TimeStudy = ({ fileId, fileName, setSelectedFile, initialConfig }) => {
   };
 
   return (
-    <Card title={fileName || "Time Study"}>
+    <Card title={fileName + " - Time Study"|| "Time Study"}>
       <Tabs activeKey={activeTab} onChange={setActiveTab} destroyInactiveTabPane>
         <TabPane tab="Input" key="input">
           {renderInputTable()}

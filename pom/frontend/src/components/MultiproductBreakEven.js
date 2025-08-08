@@ -233,7 +233,7 @@ const handleAddItem = useCallback(() => {
       setIsLoading(true);
 
       const payload = {
-        name: fileName || 'Multiproduct Break-Even Analysis',
+        name: fileName + ' - Multiproduct Break-Even Analysis' || 'Multiproduct Break-Even Analysis',
         input_data: {
           fixed_cost: fixedCost,
           items: items.map(({ key, ...rest }) => rest)

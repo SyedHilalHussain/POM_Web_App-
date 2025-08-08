@@ -27,6 +27,8 @@ import TimeStudyModal from "./TimeStudyModal";
 import SampleSizeTimeStudy from "./SampleSizeTimeStudy";
 import SampleSizeTimeStudyModal from "./SampleSizeTimeStudyModal";
 
+import ReorderPointNormalDist from "./ReorderPointNormalDist";
+
 const { Content } = Layout;
 
 function MainContent() {
@@ -538,6 +540,15 @@ function MainContent() {
             fileName={selectedFile.name}
             setSelectedFile={setSelectedFile}
             initialConfig={kanbanConfig}
+          />
+        )}
+
+        {selectedFile.type === "reorderpoint_normaldist" && (
+          <ReorderPointNormalDist
+            fileId={selectedFile.id}
+            fileName={selectedFile.name}
+            isSaved={isSaved}
+            setIsSaved={setIsSaved}
           />
         )}
       </Content>

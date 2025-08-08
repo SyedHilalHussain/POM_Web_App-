@@ -78,7 +78,7 @@ function FileManager() {
     title: "Sample Size for Time Studies File Manager"
   },
     "20": {  // Add this configuration for Reorder Point/Safety Stock (Normal Dist)
-    endpoint: "/api/list_sample_size_for_ts/", 
+    endpoint: "/api/list_reorder_normal_dist/", 
     type: "reorderpoint_normaldist",
     title: "Reorder Point/Safety Stock (Normal Distribution) File Manager"
   },

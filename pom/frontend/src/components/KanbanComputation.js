@@ -91,7 +91,7 @@ useEffect(() => {
       setIsLoading(true);
 
       const payload = {
-        name: fileName || 'Kanban Computation',
+        name: fileName + ' - Kanban Computation' || 'Kanban Computation',
         mode,
         parameters
 

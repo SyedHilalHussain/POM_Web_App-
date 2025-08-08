@@ -290,7 +290,7 @@ const RegressionProjector = ({
   };
 
   return (
-    <Card title={fileName || "Regression Projector"}>
+    <Card title={fileName + " - Regression Projector" || "Regression Projector"}>
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
         <TabPane tab="Input" key="input">
           {renderInputTable()}

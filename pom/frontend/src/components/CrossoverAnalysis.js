@@ -502,7 +502,7 @@ const CrossoverAnalysis = ({ fileId, fileName, setSelectedFile, initialConfig })
   };
 
   return (
-    <Card title={fileName || 'Crossover Analysis'}>
+    <Card title={fileName + ' - Crossover Analysis' || 'Crossover Analysis'}>
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
         <TabPane tab="Input Data" key="input">
           {renderInputTab()}

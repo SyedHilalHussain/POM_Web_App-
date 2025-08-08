@@ -402,7 +402,7 @@ const EconomicProductionLotSize = ({
   };
 
   return (
-    <Card title={fileName || "Economic Production Lot Size"}>
+    <Card title={fileName + " - Economic Production Lot Size" || "Economic Production Lot Size"}>
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
         <TabPane tab="Input Parameters" key="input">
           <Table

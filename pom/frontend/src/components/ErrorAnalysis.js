@@ -68,7 +68,7 @@ const ErrorAnalysis = ({ fileId, fileName, setSelectedFile, initialConfig }) => 
       setIsLoading(true);
 
       const payload = {
-        name: fileName || 'Error Analysis',
+        name: fileName + ' - Error Analysis' || 'Error Analysis',
         input_data: {
           labels: data.map(d => d.label),
           actual: data.map(d => Number(d.actual)),

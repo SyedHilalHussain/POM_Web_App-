@@ -127,7 +127,7 @@ function PreferenceMatrix({ fileId, fileName, matrixConfig, setSelectedFile }) {
 
   return (
     <div>
-      <h3>Preference Matrix - {fileName}</h3>
+      <h3>{fileName} - Preference Matrix</h3>
       <Table
         bordered
         pagination={false}
