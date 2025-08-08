@@ -98,5 +98,10 @@ path('calculate_eoq/', views.calculate_eoq_only, name='calculate_eoq'),
     path('list_sample_size_for_ts/', views.list_sample_size_for_ts, name='list_sample_size_for_ts'),
     path('retrieve_sample_size_for_ts/<int:id>/', views.retrieve_sample_size_for_ts, name='retrieve_sample_size_for_ts'),
 
-]
+    #Reorder point (Normal Distribution)
+    path('save_reorder_normal_dist/', views.save_reorder_normal_dist, name='save_reorder_normal_dist'),
+    path('update_reorder_normal_dist/<int:file_id>/', views.update_reorder_normal_dist, name='update_reorder_normal_dist'),
+    path('list_reorder_normal_dist/', views.list_reorder_normal_dist, name='list_reorder_normal_dist'),
+    path('retrieve_reorder_normal_dist/<int:id>/', views.retrieve_reorder_normal_dist, name='retrieve_reorder_normal_dist'),
 
+]
