@@ -31,6 +31,8 @@ const SampleSizeTimeStudy = ({
   const [confidenceLevel, setConfidenceLevel] = useState("95% (1.96 sigma)");
   const [inputType, setInputType] = useState(initialConfig?.inputType || "raw");
 
+  const [numCols, setNumCols] = useState(initialConfig?.numCols || 0);
+
   const getAuthToken = () => localStorage.getItem("access_token");
 
   const confidenceOptions = [
@@ -56,6 +58,10 @@ const SampleSizeTimeStudy = ({
       setInputType(input_data.objective === "Raw data" ? "raw" : "mean");
       setConfidenceLevel(input_data.confidence_level);
       setInputData(input_data.elements);
+
+      setNumCols(input_data.elements?.[0]?.raw_data?.length || 0);
+
+
       setOutputData(output_data);
       setIsSaved(true);
       setActiveTab("input");
@@ -66,16 +72,35 @@ const SampleSizeTimeStudy = ({
     }
   };
 
+  // useEffect(() => {
+  //   if (fileId) {
+  //     setInputData([]);
+  //     setOutputData(null);
+  //     setIsSaved(false);
+  //     setActiveTab("input");
+  //     loadData(fileId);
+  //   } else if (initialConfig) {
+  //     const emptyElements = Array.from({ length: initialConfig.numRows }, () =>
+  //       inputType === "mean"
+  //         ? { accuracy: null, mean: null, std_dev: null }
+  //         : {
+  //             accuracy: null,
+  //             raw_data: Array(initialConfig.numCols).fill(null),
+  //           }
+  //     );
+
+  //     setInputData(emptyElements);
+  //     setOutputData(null);
+  //     setIsSaved(false);
+  //     setActiveTab("input");
+  //   }
+  // }, [fileId, initialConfig]);
+
   useEffect(() => {
-    if (fileId) {
-      setInputData([]);
-      setOutputData(null);
-      setIsSaved(false);
-      setActiveTab("input");
-      loadData(fileId);
-    } else if (initialConfig) {
+    const initializeNewFile = () => {
+      const isMean = initialConfig?.inputType === "mean";
       const emptyElements = Array.from({ length: initialConfig.numRows }, () =>
-        inputType === "mean"
+        isMean
           ? { accuracy: null, mean: null, std_dev: null }
           : {
               accuracy: null,
@@ -84,9 +109,23 @@ const SampleSizeTimeStudy = ({
       );
 
       setInputData(emptyElements);
+      setInputType(initialConfig.inputType || "raw");
+      setConfidenceLevel("95% (1.96 sigma)");
       setOutputData(null);
       setIsSaved(false);
       setActiveTab("input");
+    };
+
+    if (fileId) {
+      // OPEN EXISTING FILE → Fetch from API
+      setInputData([]);
+      setOutputData(null);
+      setIsSaved(false);
+      setActiveTab("input");
+      loadData(fileId);
+    } else if (initialConfig) {
+      // NEW FILE → Use modal config
+      initializeNewFile();
     }
   }, [fileId, initialConfig]);
 
@@ -205,7 +244,7 @@ const SampleSizeTimeStudy = ({
           />
         ),
       },
-      ...Array(initialConfig?.numCols || 0)
+      ...Array(numCols)
         .fill(null)
         .map((_, obsIdx) => ({
           title: initialConfig?.colNames?.[obsIdx] || `Obs ${obsIdx + 1}`,

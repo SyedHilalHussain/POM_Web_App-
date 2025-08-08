@@ -21,7 +21,7 @@ function Sidebar() {
   const handleMenuClick = (e) => {
   console.log("Sidebar selected key:", e.key);
     setSelectedKey(e.key);  // Set the selected key when a menu item is clicked
-     if (e.key === "1" || e.key === "2" || e.key === "11" || e.key === "3" || e.key === "8" || e.key === "9" || e.key === "10" || e.key === "12" || e.key === "6"|| e.key === "13"|| e.key === "14" || e.key === "15") {
+     if (e.key === "1" || e.key === "2" || e.key === "11" || e.key === "3" || e.key === "8" || e.key === "9" || e.key === "10" || e.key === "12" || e.key === "6"|| e.key === "13"|| e.key === "14" || e.key === "15" || e.key === "20") {
       setIsModalVisible(true);
     }
   };
@@ -83,6 +83,8 @@ function Sidebar() {
           <Menu.Item key="8">Economic Order Quantity (EOQ) Model</Menu.Item>
           <Menu.Item key="13">Economic Production Lot Size Model</Menu.Item>
           <Menu.Item key="9">ABC Analysis</Menu.Item>
+          <Menu.Item key="19">Reorder Point / Safety Stock (Discrete Distribution)</Menu.Item>
+          <Menu.Item key="20">Reorder Point / Safety Stock  (Normal Distribution)</Menu.Item>
           <Menu.Item key="10">Kanban Computation</Menu.Item>
           <Menu.Item key="17">Single Period Inventory (Discrete Distribution)</Menu.Item>
           <Menu.Item key="18">Single Period Inventory (Normal Distribution)</Menu.Item>

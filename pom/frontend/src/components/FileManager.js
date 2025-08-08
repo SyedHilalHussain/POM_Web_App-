@@ -77,6 +77,11 @@ function FileManager() {
     type: "samplesize_timestudy",
     title: "Sample Size for Time Studies File Manager"
   },
+    "20": {  // Add this configuration for Reorder Point/Safety Stock (Normal Dist)
+    endpoint: "/api/list_sample_size_for_ts/", 
+    type: "reorderpoint_normaldist",
+    title: "Reorder Point/Safety Stock (Normal Distribution) File Manager"
+  },
     };
 
     useEffect(() => {
@@ -112,6 +117,7 @@ function FileManager() {
   else if (selectedKey === "13") fileType = "productionlotsize";
   else if (selectedKey === "14") fileType = "timestudy";
   else if (selectedKey === "15") fileType = "samplesize_timestudy";
+  else if (selectedKey === "20") fileType = "reorderpoint_normaldist";
   else fileType = "config"; // direct = BreakEven, config = PreferenceMatrix
 
         // Set selected file with the appropriate workflow type
