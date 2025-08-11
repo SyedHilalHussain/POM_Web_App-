@@ -42,11 +42,10 @@ path('calculate_multiproduct/', views.save_multiproduct, name='calculate_multipr
     path('list_preferencematrix/', views.list_matrices, name='list_matrices'),
     path('retrieve_preferencematrix/<int:matrix_id>/', views.retrieve_matrix, name='retrieve_matrix'),
     # Decision_table
-    path('calculate_decisiontable/', views.calculate_table, name='calculate_table'),
-    path('save_decisiontable/', views.save_table, name='save_table'),
-    path('update_decisiontable/<int:table_id>/', views.update_table, name='update_table'),
-    path('list_decisiontable/', views.list_tables, name='list_tables'),
-    path('retrieve_decisiontable/<int:table_id>/', views.retrieve_table, name='retrieve_table'),
+    path('save_decision_table/', views.save_decision_table, name='save_decision_table'),
+    path('update_decision_table/<int:file_id>/', views.update_decision_table, name='update_decision_table'),
+    path('list_decision_tables/', views.list_decision_tables, name='list_decision_tables'),
+    path('retrieve_decision_table/<int:id>/', views.retrieve_decision_table, name='retrieve_decision_table'),
 
 #     Inventory Management(EOQ)
 

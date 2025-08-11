@@ -21,9 +21,9 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
-from .models import CustomUser, AnalysisFile,KanbanComputation, ReorderFile, PreferenceMatrix,ABCAnalysis,DecisionTables, CrossVolume,MultiProductBreakEven,EOQModel, ErrorAnalysis, RegressionProjector, EconomicProductionLotSize
+from .models import CustomUser, AnalysisFile,KanbanComputation, ReorderFile, PreferenceMatrix,ABCAnalysis,DecisionTables, CrossVolume,MultiProductBreakEven,EOQModel, ErrorAnalysis, RegressionProjector, EconomicProductionLotSize, SinglePeriodInventory
 
-from .serializers import UserProfileSerializer, KanbanComputationSerializer ,AnalysisFileSerializer,ABCAnalysisSerializer, ReorderFileSerializer,DecisionTablesSerializer,MultiProductBreakEvenSerializer,EOQSerializer, PreferenceMatrixSerializer, CrossVolumeSerializer, ErrorAnalysisSerializer, RegressionProjectorSerializer, EPLotSizeSerializer
+from .serializers import UserProfileSerializer, KanbanComputationSerializer ,AnalysisFileSerializer,ABCAnalysisSerializer, ReorderFileSerializer,DecisionTablesSerializer,MultiProductBreakEvenSerializer,EOQSerializer, PreferenceMatrixSerializer, CrossVolumeSerializer, ErrorAnalysisSerializer, RegressionProjectorSerializer, EPLotSizeSerializer, SinglePeriodInventorySerializer
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer
@@ -802,154 +802,83 @@ def retrieve_matrix(request, matrix_id):
         return Response(serializer.data)
     except PreferenceMatrix.DoesNotExist:
         return Response({'error': 'Matrix not found.'}, status=status.HTTP_404_NOT_FOUND)
-    
-    
-
 
 # Decision Tables module api's
-def calculate_decision_table(input_data):
-    """
-    Perform decision analysis and calculate EV, Maximin, Maximax, and Regret Table.
-    """
-    num_scenarios = len(input_data['probabilities'])
-    num_options = len(input_data['payoffs'])
-    probabilities = input_data['probabilities']
-    payoffs = input_data['payoffs']
-    objective = input_data['objective']
 
-    # Ensure probabilities sum to 1
-    if abs(sum(probabilities) - 1.0) > 0.01:
-        raise ValueError("Probabilities must sum to 1.")
-
-    # Calculate Expected Values (EV)
-    expected_values = [
-        sum(p * v for p, v in zip(probabilities, option)) for option in payoffs
-    ]
-
-    # Calculate Maximin and Maximax
-    maximin_values = [min(option) for option in payoffs]
-    maximax_values = [max(option) for option in payoffs]
-
-    if objective == "Profits (maximize)":
-        best_ev = max(expected_values)
-        best_option_ev = expected_values.index(best_ev) + 1
-        best_maximin = max(maximin_values)
-        best_option_maximin = maximin_values.index(best_maximin) + 1
-        best_maximax = max(maximax_values)
-        best_option_maximax = maximax_values.index(best_maximax) + 1
-    else:
-        best_ev = min(expected_values)
-        best_option_ev = expected_values.index(best_ev) + 1
-        best_maximin = min(maximin_values)
-        best_option_maximin = maximin_values.index(best_maximin) + 1
-        best_maximax = min(maximax_values)
-        best_option_maximax = maximax_values.index(best_maximax) + 1
-
-    # Create Regret Table
-    regret_table = []
-    for scenario_idx in range(num_scenarios):
-        if objective == "Profits (maximize)":
-            best_scenario_value = max(payoffs[option_idx][scenario_idx] for option_idx in range(num_options))
-        else:
-            best_scenario_value = min(payoffs[option_idx][scenario_idx] for option_idx in range(num_options))
-
-        regrets = [abs(best_scenario_value - payoffs[option_idx][scenario_idx]) for option_idx in range(num_options)]
-        regret_table.append(regrets)
-
-    return {
-        "expectedValues": expected_values,
-        "maximinValues": maximin_values,
-        "maximaxValues": maximax_values,
-        "bestEV": {"value": best_ev, "option": best_option_ev},
-        "bestMaximin": {"value": best_maximin, "option": best_option_maximin},
-        "bestMaximax": {"value": best_maximax, "option": best_option_maximax},
-        "regretTable": regret_table
-    }
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def calculate_table(request):
-    try:
-        input_data = json.loads(request.body)
-        results = calculate_decision_table(input_data)
-        return Response({"input_data": input_data, "results": results}, status=status.HTTP_200_OK)
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+from .services.DecisionTables import process_decision_table_input
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def save_table(request):
+def save_decision_table(request):
     try:
         user = request.user
         name = request.data.get('name')
         input_data = request.data.get('input_data')
 
         if not name or not input_data:
-            return Response({"error": "Name and input data are required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Name and input_data are required.'}, status=400)
 
-        results = calculate_decision_table(input_data)
+        result, error = process_decision_table_input(input_data)
+        if error:
+            return Response({'error': error}, status=400)
 
-        decision_table = DecisionTables.objects.create(
+        analysis = DecisionTables.objects.create(
             user=user,
             name=name,
             input_data=input_data,
-            output_data=results
+            output_data=result['output_data']
         )
 
-        serializer = DecisionTablesSerializer(decision_table)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer = DecisionTablesSerializer(analysis)
+        return Response(serializer.data, status=201)
+
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=500)
 
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-def update_table(request, table_id):
+def update_decision_table(request, file_id):
     try:
-        decision_table = DecisionTables.objects.get(id=table_id, user=request.user)
+        analysis = DecisionTables.objects.get(id=file_id, user=request.user)
+        name = request.data.get('name', analysis.name)
+        input_data = request.data.get('input_data', analysis.input_data)
 
-        name = request.data.get("name", decision_table.name)
-        input_data = request.data.get("input_data", decision_table.input_data)
+        result, error = process_decision_table_input(input_data)
+        if error:
+            return Response({'error': error}, status=400)
 
-        results = calculate_decision_table(input_data)
+        analysis.name = name
+        analysis.input_data = input_data
+        analysis.output_data = result['output_data']
+        analysis.save()
 
-        decision_table.name = name
-        decision_table.input_data = input_data
-        decision_table.output_data = results
-        decision_table.save()
-
-        serializer = DecisionTablesSerializer(decision_table)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = DecisionTablesSerializer(analysis)
+        return Response(serializer.data, status=200)
 
     except DecisionTables.DoesNotExist:
-        return Response({"error": "Table not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'File not found'}, status=404)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=500)
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def list_tables(request):
-    user = request.user
-    tables = DecisionTables.objects.filter(user=user)
-    serializer = DecisionTablesSerializer(tables, many=True)
+def list_decision_tables(request):
+    files = DecisionTables.objects.filter(user=request.user)
+    serializer = DecisionTablesSerializer(files, many=True)
     return Response(serializer.data)
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def retrieve_table(request, table_id):
+def retrieve_decision_table(request, id):
     try:
-        decision_table = DecisionTables.objects.get(id=table_id, user=request.user)
-        serializer = DecisionTablesSerializer(decision_table)
+        file = DecisionTables.objects.get(id=id, user=request.user)
+        serializer = DecisionTablesSerializer(file)
         return Response(serializer.data)
     except DecisionTables.DoesNotExist:
-        return Response({"error": "Table not found."}, status=status.HTTP_404_NOT_FOUND)
-
+        return Response({'error': 'Not found'}, status=404)
 
 
 #  Inventory Management(Economic Order Quantity)
