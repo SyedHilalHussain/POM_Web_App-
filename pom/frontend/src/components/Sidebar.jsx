@@ -21,7 +21,7 @@ function Sidebar() {
   const handleMenuClick = (e) => {
   console.log("Sidebar selected key:", e.key);
     setSelectedKey(e.key);  // Set the selected key when a menu item is clicked
-     if (e.key === "1" || e.key === "2" || e.key === "11" || e.key === "3" || e.key === "8" || e.key === "9" || e.key === "10" || e.key === "12" || e.key === "6"|| e.key === "13"|| e.key === "14" || e.key === "15" || e.key === "20") {
+     if (e.key === "1" || e.key === "2" || e.key === "11" || e.key === "3" || e.key === "8" || e.key === "9" || e.key === "10" || e.key === "12" || e.key === "6"|| e.key === "13"|| e.key === "14" || e.key === "15" || e.key === "20" || e.key === "21") {
       setIsModalVisible(true);
     }
   };
@@ -90,6 +90,8 @@ function Sidebar() {
           <Menu.Item key="18">Single Period Inventory (Normal Distribution)</Menu.Item>
         </SubMenu>
          <SubMenu key="decision-making" title="Decision Making" icon={<TableOutlined />}>
+          <Menu.Item key="21">Decision Table</Menu.Item>
+          <Menu.Item key="22">Decision Trees</Menu.Item>
           <Menu.Item key="11">Create Preference Matrix</Menu.Item>
         </SubMenu>
          <SubMenu key="output-rates" title="Measuring Output Rates" icon={<FundOutlined />}>

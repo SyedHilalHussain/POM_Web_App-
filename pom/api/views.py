@@ -21,9 +21,9 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
-from .models import CustomUser, AnalysisFile,KanbanComputation, ReorderFile, PreferenceMatrix,ABCAnalysis,DecisionTables, CrossVolume,MultiProductBreakEven,EOQModel, ErrorAnalysis, RegressionProjector, EconomicProductionLotSize, SinglePeriodInventory
+from .models import CustomUser, AnalysisFile,KanbanComputation, ReorderFile, PreferenceMatrix,ABCAnalysis,DecisionTables, CrossVolume,MultiProductBreakEven,EOQModel, ErrorAnalysis, RegressionProjector, EconomicProductionLotSize
 
-from .serializers import UserProfileSerializer, KanbanComputationSerializer ,AnalysisFileSerializer,ABCAnalysisSerializer, ReorderFileSerializer,DecisionTablesSerializer,MultiProductBreakEvenSerializer,EOQSerializer, PreferenceMatrixSerializer, CrossVolumeSerializer, ErrorAnalysisSerializer, RegressionProjectorSerializer, EPLotSizeSerializer, SinglePeriodInventorySerializer
+from .serializers import UserProfileSerializer, KanbanComputationSerializer ,AnalysisFileSerializer,ABCAnalysisSerializer, ReorderFileSerializer,DecisionTablesSerializer,MultiProductBreakEvenSerializer,EOQSerializer, PreferenceMatrixSerializer, CrossVolumeSerializer, ErrorAnalysisSerializer, RegressionProjectorSerializer, EPLotSizeSerializer
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer

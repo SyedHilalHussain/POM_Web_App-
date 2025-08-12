@@ -82,6 +82,11 @@ function FileManager() {
     type: "reorderpoint_normaldist",
     title: "Reorder Point/Safety Stock (Normal Distribution) File Manager"
   },
+    "21": {  // Add this configuration for Decision Table
+    endpoint: "/api/list_decision_tables/", 
+    type: "decision_table",
+    title: "Decision Table File Manager"
+  },
     };
 
     useEffect(() => {
@@ -118,6 +123,7 @@ function FileManager() {
   else if (selectedKey === "14") fileType = "timestudy";
   else if (selectedKey === "15") fileType = "samplesize_timestudy";
   else if (selectedKey === "20") fileType = "reorderpoint_normaldist";
+  else if (selectedKey === "21") fileType = "decision_table";
   else fileType = "config"; // direct = BreakEven, config = PreferenceMatrix
 
         // Set selected file with the appropriate workflow type

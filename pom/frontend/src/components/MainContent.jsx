@@ -26,6 +26,8 @@ import TimeStudy from "./TimeStudy";
 import TimeStudyModal from "./TimeStudyModal";
 import SampleSizeTimeStudy from "./SampleSizeTimeStudy";
 import SampleSizeTimeStudyModal from "./SampleSizeTimeStudyModal";
+import DecisionTable from "./DecisionTable";
+import DecisionTableModal from "./DecisionTableModal";
 
 import ReorderPointNormalDist from "./ReorderPointNormalDist";
 
@@ -63,6 +65,9 @@ function MainContent() {
 
   const [showSampleSizeTimeStudyModal, setShowSampleSizeTimeStudyModal] = useState(false);
   const [sampleSizaTimeStudyConfig, setSampleSizaTimeStudyConfig] = useState(null);
+
+  const [showDecisionTableModal, setShowDecisionTableModal] = useState(false);
+  const [decisionTableConfig, setDecisionTableConfig] = useState(null);
 
   const [showKanbanModal, setShowKanbanModal] = useState(false);
   const [kanbanConfig, setKanbanConfig] = useState(null);
@@ -111,6 +116,12 @@ function MainContent() {
         setSampleSizaTimeStudyConfig(null)
         if (!selectedFile.id) {
           setShowSampleSizeTimeStudyModal(true)
+        }
+      }
+       else if (selectedFile.type === "decision_table") {
+        setDecisionTableConfig(null)
+        if (!selectedFile.id) {
+          setShowDecisionTableModal(true)
         }
       }
   
@@ -206,6 +217,26 @@ function MainContent() {
       setSelectedKey(null);
     }
     setShowSampleSizeTimeStudyModal(false);
+  };
+
+  // Add Decision Table Study handler
+  const handleDecisionTableSetup = (config) => {
+    // setDecisionTableConfig(config);
+    setDecisionTableConfig({
+      num_options: config.numRows,
+      num_scenarios: config.numCols,
+      row_names: config.rowNames,
+      column_names: config.colNames
+  });
+    setShowDecisionTableModal(false);
+  };
+
+    // Add Regression Projector Modal close handler
+  const handleDecisionTableModalClose = () => {
+    if (!decisionTableConfig && selectedKey === "21") {
+      setSelectedKey(null);
+    }
+    setShowDecisionTableModal(false);
   };
 
   const handleCrossoverSetup = (config) => {
@@ -519,6 +550,27 @@ function MainContent() {
                 fileName={selectedFile.name}
                 setSelectedFile={setSelectedFile}
                 initialConfig={sampleSizaTimeStudyConfig}
+              />
+            )}
+          </>
+        )}
+
+        {selectedFile?.type === "decision_table" && (
+          <>
+            {showDecisionTableModal && (
+              <DecisionTableModal
+                isVisible={true}
+                onClose={handleDecisionTableModalClose}
+                onConfirm={handleDecisionTableSetup}
+              />
+            )}
+
+            {!showDecisionTableModal && (
+              <DecisionTable
+                fileId={selectedFile.id}
+                fileName={selectedFile.name}
+                setSelectedFile={setSelectedFile}
+                initialConfig={decisionTableConfig}
               />
             )}
           </>

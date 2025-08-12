@@ -185,12 +185,21 @@ const userMenu = (
         return (
           <>
             <Menu.Item key="8" onClick={() => handleNewDropDown("8")}>EOQ Model</Menu.Item>
+            <Menu.Item key="13" onClick={() => handleNewDropDown("13")}>Economic Production Lot Size Model</Menu.Item>
             <Menu.Item key="9" onClick={() => handleNewDropDown("9")}>ABC Analysis</Menu.Item>
+            <Menu.Item key="19" onClick={() => handleNewDropDown("19")}>Reorder Point / Safety Stock (Discrete Distribution)</Menu.Item>
+            <Menu.Item key="20" onClick={() => handleNewDropDown("20")}>Reorder Point / Safety Stock (Normal Distribution)</Menu.Item>
+            <Menu.Item key="10" onClick={() => handleNewDropDown("10")}>Kanban Computation</Menu.Item>
+            <Menu.Item key="17" onClick={() => handleNewDropDown("17")}>Single Period Inventory (Discrete Distribution)</Menu.Item>
+            <Menu.Item key="18" onClick={() => handleNewDropDown("18")}>Single Period Inventory (Normal Distribution)</Menu.Item>
+
           </>
         );
       case 'decision-making':
         return (
           <>
+            <Menu.Item key="21" onClick={() => handleNewDropDown("21")}>Decision Table</Menu.Item>
+            <Menu.Item key="22" onClick={() => handleNewDropDown("22")}>Decision Trees</Menu.Item>
             <Menu.Item key="11" onClick={() => handleNewDropDown("11")}>Create Preference Matrix</Menu.Item>
           </>
         );
@@ -218,7 +227,7 @@ const userMenu = (
 
           {/* Edit dropdown */}
           <Dropdown overlay={editItems} trigger={['click']}>
-            <Button type="text" style={{ marginRight: 8 }}>Edit</Button>
+            <Button type="text" style={{ marginRight: 8 }} disabled>Edit</Button>
           </Dropdown>
 
           {/* View dropdown */}
@@ -232,9 +241,9 @@ const userMenu = (
           </Dropdown>
 
           {/* Other buttons */}
-          <Button type="text" style={{ marginRight: 8 }}>My Lab</Button>
-          <Button type="text" style={{ marginRight: 8 }}>Format</Button>
-          <Button type="text" style={{ marginRight: 8 }}>Tools</Button>
+          <Button type="text" style={{ marginRight: 8 }} disabled>My Lab</Button>
+          <Button type="text" style={{ marginRight: 8 }} disabled>Format</Button>
+          <Button type="text" style={{ marginRight: 8 }} disabled>Tools</Button>
           <Button type="text" style={{ marginRight: 8 }}>Help</Button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
@@ -253,31 +262,35 @@ const userMenu = (
           <div style={subHeadingStyle}>
             <VerticalButton icon={FileOutlined} text="New" />
             <VerticalButton icon={FolderOpenOutlined} text="Open" />
-            <VerticalButton icon={SaveOutlined} text="Save" />
-            <VerticalButton icon={PrinterOutlined} text="Print" />
+            <VerticalButton icon={SaveOutlined} text="Save"  />
+            <VerticalButton icon={PrinterOutlined} text="Print"  />
           </div>
           <div style={subHeadingStyle}>
-            <VerticalButton icon={SolutionOutlined} text="Solve" />
+            <VerticalButton icon={SolutionOutlined} text="Solve" disabled />
           </div>
           <div style={subHeadingStyle}>
-            <VerticalButton icon={CopyOutlined} text="Copy" />
-            <VerticalButton icon={SnippetsOutlined} text="Paste" />
+            <VerticalButton icon={CopyOutlined} text="Copy" disabled  />
+            <VerticalButton icon={SnippetsOutlined} text="Paste" disabled  />
           </div>
           <div style={subHeadingStyle}>
-            <VerticalButton icon={CompressOutlined} text="Autofit Columns" />
-            <VerticalButton icon={ExpandOutlined} text="Widen Columns" />
-            <VerticalButton icon={FullscreenOutlined} text="Full Screen" />
+            <VerticalButton icon={CompressOutlined} text="Autofit Columns" disabled  />
+            <VerticalButton icon={ExpandOutlined} text="Widen Columns" disabled />
+            <VerticalButton icon={FullscreenOutlined} text="Full Screen" disabled  />
+          </div>
+          <div style={subHeadingStyle}>
+            <VerticalButton icon={SnippetsFilled} text="Paste From" disabled  />
+            <VerticalButton icon={CopyFilled} text="Copy Cell" disabled  />
           </div>
         </div>
       )}
 
       {/* My Lab Toolbar */}
-      {isMyLabChecked && (
+      {/* {isMyLabChecked && (
         <div style={HeadingStyle}>
           <VerticalButton icon={SnippetsFilled} text="Paste From" />
           <VerticalButton icon={CopyFilled} text="Copy Cell" />
         </div>
-      )}
+      )} */}
 
       {/* Format Toolbar */}
       {isFormatToolbarChecked && (
