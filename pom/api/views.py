@@ -21,9 +21,9 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
-from .models import CustomUser, AnalysisFile,KanbanComputation, ReorderFile, PreferenceMatrix,ABCAnalysis,DecisionTables, CrossVolume,MultiProductBreakEven,EOQModel, ErrorAnalysis, RegressionProjector, EconomicProductionLotSize, SinglePeriodInventory
+from .models import CustomUser, AnalysisFile,KanbanComputation, ReorderFile, PreferenceMatrix,ABCAnalysis,DecisionTables, CrossVolume,MultiProductBreakEven,EOQModel, ErrorAnalysis, RegressionProjector, EconomicProductionLotSize, QuantityDiscountEOQ
 
-from .serializers import UserProfileSerializer, KanbanComputationSerializer ,AnalysisFileSerializer,ABCAnalysisSerializer, ReorderFileSerializer,DecisionTablesSerializer,MultiProductBreakEvenSerializer,EOQSerializer, PreferenceMatrixSerializer, CrossVolumeSerializer, ErrorAnalysisSerializer, RegressionProjectorSerializer, EPLotSizeSerializer, SinglePeriodInventorySerializer
+from .serializers import UserProfileSerializer, KanbanComputationSerializer ,AnalysisFileSerializer,ABCAnalysisSerializer, ReorderFileSerializer,DecisionTablesSerializer,MultiProductBreakEvenSerializer,EOQSerializer, PreferenceMatrixSerializer, CrossVolumeSerializer, ErrorAnalysisSerializer, RegressionProjectorSerializer, EPLotSizeSerializer, QuantityDiscountEOQSerializer
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer
@@ -2395,3 +2395,79 @@ def retrieve_reorder_normal_dist(request, id):
         return Response(serializer.data)
     except ReorderNormalDist.DoesNotExist:
         return Response({'error': 'Not found'}, status=404)
+
+# Quantity Discount EOQ
+from .models import QuantityDiscountEOQ
+from .serializers import QuantityDiscountEOQSerializer
+from .services.QuantityDiscountEOQ import process_qdeoq_input
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_quantityDiscountEoq(request):
+    user = request.user
+    name = request.data.get('name')
+    input_data = request.data.get('input_data')
+
+    if not name or not input_data:
+        return Response({'error': 'Name and input_data are required.'}, status=400)
+
+    result, errors = process_qdeoq_input(input_data)
+    if errors:
+        return Response({'error': errors}, status=400)
+
+    analysis = QuantityDiscountEOQ.objects.create(
+        user=user,
+        name=name,
+        input_data=input_data,
+        output_data=result['output_data'],
+        chart_url=result['chart_url']
+    )
+
+    serializer = QuantityDiscountEOQSerializer(analysis)
+    return Response(serializer.data, status=201)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_quantityDiscountEoq(request, file_id):
+    try:
+        analysis = QuantityDiscountEOQ.objects.get(id=file_id, user=request.user)
+    except QuantityDiscountEOQ.DoesNotExist:
+        return Response({'error': 'File not found'}, status=404)
+
+    name = request.data.get('name', analysis.name)
+    input_data = request.data.get('input_data', analysis.input_data)
+
+    result, errors = process_qdeoq_input(input_data)
+    if errors:
+        return Response({'error': errors}, status=400)
+
+    analysis.name = name
+    analysis.input_data = input_data
+    analysis.output_data = result['output_data']
+    analysis.chart_url = result['chart_url']
+    analysis.save()
+
+    serializer = QuantityDiscountEOQSerializer(analysis)
+    return Response(serializer.data, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_quantityDiscountEoq(request):
+    files = QuantityDiscountEOQ.objects.filter(user=request.user)
+    serializer = QuantityDiscountEOQSerializer(files, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def retrieve_quantityDiscountEoq(request, id):
+    try:
+        file = QuantityDiscountEOQ.objects.get(id=id, user=request.user)
+    except QuantityDiscountEOQ.DoesNotExist:
+        return Response({'error': 'Not found'}, status=404)
+
+    serializer = QuantityDiscountEOQSerializer(file)
+    return Response(serializer.data)
+

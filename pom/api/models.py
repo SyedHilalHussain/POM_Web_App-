@@ -254,3 +254,15 @@ class ReorderNormalDist(models.Model):
     def __str__(self):
         return self.name
         
+
+class QuantityDiscountEOQ(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="single_period_inventory")
+    name = models.CharField(max_length=255)
+    input_data = models.JSONField() 
+    output_data = models.JSONField(null=True, blank=True) 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    chart_url = models.TextField()
+
+    def __str__(self):
+        return self.name
