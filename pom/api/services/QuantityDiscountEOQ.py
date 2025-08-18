@@ -1,5 +1,3 @@
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 import io, base64, math
@@ -14,8 +12,8 @@ def parse_holding_cost(raw_holding_cost):
 def validate_inputs(D, S, raw_holding_cost, num_ranges, ranges):
     if D <= 0:
         raise ValueError("Annual Demand (D) must be positive.")
-    if S < 0:
-        raise ValueError("Ordering/Setup Cost (S) must be non-negative.")
+    if S <= 0:
+        raise ValueError("Ordering/ Setup Cost (S) must be positive.")
     if num_ranges < 2:
         raise ValueError("At least 2 price ranges must be entered.")
     if len(ranges) != num_ranges:
@@ -47,7 +45,6 @@ def validate_inputs(D, S, raw_holding_cost, num_ranges, ranges):
         except ValueError:
             raise ValueError("Range values (lower, upper, price) must be numeric.")
 
-        lower, upper, price = r['lower'], r['upper'], r['price']
         if lower < 0 or (upper != float('inf') and upper < lower):
             raise ValueError("Invalid quantity range (lower/upper).")
         if price < 0:
