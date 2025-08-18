@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import io, base64, math
 
 def parse_holding_cost(raw_holding_cost):
-    if "%" in raw_holding_cost:
+    if isinstance(raw_holding_cost, str) and "%" in raw_holding_cost:
         holding_cost_pct = float(raw_holding_cost.strip("%"))
         return holding_cost_pct / 100
     else:
@@ -63,7 +63,7 @@ def validate_inputs(D, S, raw_holding_cost, num_ranges, ranges):
             raise ValueError("Price ranges are inconsistent: a gap exists between ranges.")
 
 
-def calculate_eoq(demand_rate, setup_cost, holding_cost, ranges):
+def calculate_eoq(demand_rate, setup_cost, holding_cost, ranges, is_holding_cost_pct):
     results = []
 
     for r in ranges:
@@ -72,19 +72,22 @@ def calculate_eoq(demand_rate, setup_cost, holding_cost, ranges):
 
         NA_result = {
             'range': f"{int(lower)} - {'∞' if upper == float('inf') else int(upper)}",
-            'q_star': None,
-            'order_quantity': None,
-            'setup_cost': None,
-            'holding_cost': None,
-            'unit_cost': None,
-            'total_cost': None,
+            'q_star': "NA",
+            'order_quantity': "NA",
+            'setup_cost': "NA",
+            'holding_cost': "NA",
+            'unit_cost': "NA",
+            'total_cost': "NA",
         }
 
         if price == 0:
             results.append(NA_result)
             continue
-
-        q_star = math.sqrt((2 * demand_rate * setup_cost) / (holding_cost * price))
+        
+        if is_holding_cost_pct:
+            q_star = math.sqrt((2 * demand_rate * setup_cost) / (holding_cost * price))
+        else: 
+            q_star = math.sqrt((2 * demand_rate * setup_cost) / holding_cost)
 
         if lower <= q_star <= upper:
             order_quantity = q_star
@@ -96,7 +99,11 @@ def calculate_eoq(demand_rate, setup_cost, holding_cost, ranges):
             continue
 
         total_setup_cost = (demand_rate / order_quantity) * setup_cost
-        total_holding_cost = (order_quantity / 2) * holding_cost * price
+
+        if is_holding_cost_pct:
+            total_holding_cost = (order_quantity / 2) * holding_cost * price
+        else:
+            total_holding_cost = (order_quantity / 2) * holding_cost
         total_unit_cost = demand_rate * price
         total_cost = total_setup_cost + total_holding_cost + total_unit_cost
 
@@ -167,11 +174,13 @@ def process_qdeoq_input(input_data):
         raw_holding_cost = input_data['holding_cost']
         ranges = input_data['ranges']
 
+        is_holding_cost_pct = isinstance(raw_holding_cost, str) and "%" in raw_holding_cost
+
         validate_inputs(demand_rate, setup_cost, raw_holding_cost, num_ranges, ranges)
 
         holding_cost = parse_holding_cost(raw_holding_cost)
 
-        results, best = calculate_eoq(demand_rate, setup_cost, holding_cost, ranges)
+        results, best = calculate_eoq(demand_rate, setup_cost, holding_cost, ranges, is_holding_cost_pct)
         chart_url = generate_cost_chart(demand_rate, setup_cost, holding_cost, ranges, best['order_quantity'])
 
         output_data = {
