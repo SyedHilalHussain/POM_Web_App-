@@ -27,7 +27,7 @@ def validate_inputs(D, S, raw_holding_cost, num_ranges, ranges):
         else:
             holding_cost = float(raw_holding_cost)
             if holding_cost <= 0:
-                raise ValueError("Holding cost ust be positive")
+                raise ValueError("Holding cost must be positive")
     except:
         raise ValueError("Invalid holding cost format. Use a number or percentage.")
 
@@ -45,6 +45,7 @@ def validate_inputs(D, S, raw_holding_cost, num_ranges, ranges):
         except ValueError:
             raise ValueError("Range values (lower, upper, price) must be numeric.")
 
+        lower, upper, price = r['lower'], r['upper'], r['price']
         if lower < 0 or (upper != float('inf') and upper < lower):
             raise ValueError("Invalid quantity range (lower/upper).")
         if price < 0:
@@ -69,12 +70,12 @@ def calculate_eoq(demand_rate, setup_cost, holding_cost, ranges, is_holding_cost
 
         NA_result = {
             'range': f"{int(lower)} - {'∞' if upper == float('inf') else int(upper)}",
-            'q_star': "NA",
-            'order_quantity': "NA",
-            'setup_cost': "NA",
-            'holding_cost': "NA",
-            'unit_cost': "NA",
-            'total_cost': "NA",
+            'q_star': None,
+            'order_quantity': None,
+            'setup_cost': None,
+            'holding_cost': None,
+            'unit_cost': None,
+            'total_cost': None,
         }
 
         if price == 0:
