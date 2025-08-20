@@ -256,7 +256,7 @@ function MainContent() {
     setShowQuantityDiscountModal(false);
   };
 
-    // Add Regression Projector Modal close handler
+    // Add Quantity Discount Modal close handler
   const handleQuantityDiscountModalClose = () => {
     if (!quantityDiscountConfig && selectedKey === "23") {
       setSelectedKey(null);

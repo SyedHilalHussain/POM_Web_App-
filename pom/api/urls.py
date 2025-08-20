@@ -103,4 +103,9 @@ path('calculate_eoq/', views.calculate_eoq_only, name='calculate_eoq'),
     path('list_reorder_normal_dist/', views.list_reorder_normal_dist, name='list_reorder_normal_dist'),
     path('retrieve_reorder_normal_dist/<int:id>/', views.retrieve_reorder_normal_dist, name='retrieve_reorder_normal_dist'),
 
+    #Quantity Discount (EOQ)
+    path('save_quantityDiscountEoq/', views.save_quantityDiscountEoq, name='save_quantityDiscountEoq'),
+    path('update_quantityDiscountEoq/<int:file_id>/', views.update_quantityDiscountEoq, name='update_quantityDiscountEoq'),
+    path('list_quantityDiscountEoq/', views.list_quantityDiscountEoq, name='list_quantityDiscountEoq'),
+    path('retrieve_quantityDiscountEoq/<int:id>/', views.retrieve_quantityDiscountEoq, name='retrieve_quantityDiscountEoq'),
 ]

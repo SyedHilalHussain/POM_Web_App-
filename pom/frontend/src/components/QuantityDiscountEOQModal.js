@@ -7,18 +7,50 @@ const QuantityDiscountEOQModal = ({ isVisible, onClose, onConfirm }) => {
   const [form] = Form.useForm();
   const [namingConvention, setNamingConvention] = useState("default");
 
+  //   const handleOk = () => {
+  //   form.validateFields().then((values) => {
+  //     let priceRangeNames = [];
+  //     if (namingConvention === "default") {
+  //       priceRangeNames = Array(values.priceRangeCount)
+  //         .fill()
+  //         .map((_, i) => `Range ${i + 1}`);
+  //     } else if (namingConvention === "abc") {
+  //       priceRangeNames = Array(values.priceRangeCount)
+  //         .fill()
+  //         .map((_, i) => String.fromCharCode(97 + i));
+  //     } else if (namingConvention === "ABC") {
+  //       priceRangeNames = Array(values.priceRangeCount)
+  //         .fill()
+  //         .map((_, i) => String.fromCharCode(65 + i));
+  //     } else if (namingConvention === "123") {
+  //       priceRangeNames = Array(values.priceRangeCount)
+  //         .fill()
+  //         .map((_, i) => `${i + 1}`);
+  //     }
+
+  //     // Build rows for QuantityDiscountEOQ
+  //     const ranges = priceRangeNames.map((name) => ({
+  //       name,
+  //       lower: null,
+  //       upper: null,
+  //       price: null,
+  //     }));
+
+  //     onConfirm({
+  //       priceRangeCount: values.priceRangeCount,
+  //       priceRangeNames,
+  //       ranges,   // 👈 send initial table rows too
+  //     });
+  //   });
+  // };
+
   const handleOk = () => {
     form.validateFields().then((values) => {
-      // Generate item names based on the selected naming convention
       let priceRangeNames = [];
       if (namingConvention === "default") {
         priceRangeNames = Array(values.priceRangeCount)
           .fill()
           .map((_, i) => `Range ${i + 1}`);
-      } else if (namingConvention === "abc") {
-        priceRangeNames = Array(values.priceRangeCount)
-          .fill()
-          .map((_, i) => String.fromCharCode(97 + i));
       } else if (namingConvention === "ABC") {
         priceRangeNames = Array(values.priceRangeCount)
           .fill()
@@ -28,14 +60,19 @@ const QuantityDiscountEOQModal = ({ isVisible, onClose, onConfirm }) => {
           .fill()
           .map((_, i) => `${i + 1}`);
       }
-      console.log(
-        "QuantityDiscountEOQModal received onConfirm:",
-        typeof onConfirm
-      );
+
+      // Build ranges with placeholders 👇
+      const ranges = priceRangeNames.map((name) => ({
+        name,
+        lower: null,
+        upper: null,
+        price: null,
+      }));
 
       onConfirm({
         priceRangeCount: values.priceRangeCount,
         priceRangeNames,
+        ranges, // ✅ send ranges
       });
     });
   };

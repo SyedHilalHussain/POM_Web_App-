@@ -1,7 +1,7 @@
 # api/serializers.py
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import CustomUser, AnalysisFile, ReorderFile,KanbanComputation , PreferenceMatrix, DecisionTables, CrossVolume, MultiProductBreakEven, EOQModel,ABCAnalysis, ErrorAnalysis, RegressionProjector, EconomicProductionLotSize, TimeStudy, SampleSizeForTS, ReorderNormalDist
+from .models import CustomUser, AnalysisFile, ReorderFile,KanbanComputation , PreferenceMatrix, DecisionTables, CrossVolume, MultiProductBreakEven, EOQModel,ABCAnalysis, ErrorAnalysis, RegressionProjector, EconomicProductionLotSize, TimeStudy, SampleSizeForTS, ReorderNormalDist, QuantityDiscountEOQ
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -217,4 +217,21 @@ class ReorderNormalDistSerializer(serializers.ModelSerializer):
             'updated_at',   # Timestamp of last update
             'input_data',   # Input parameters and probabilities (JSON)
             'output_data',  # Calculated results (JSON)
+        ]
+
+class QuantityDiscountEOQSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Single Period Inventory Model
+    """
+    class Meta:
+        model = QuantityDiscountEOQ
+        fields = [
+            'id',           # Primary key
+            'user',         # Related user (foreign key)
+            'name',         # Name of the analysis
+            'created_at',   # Timestamp of creation
+            'updated_at',   # Timestamp of last update
+            'input_data',   # Input parameters and probabilities (JSON)
+            'output_data',  # Calculated results (JSON)
+            'chart_url',
         ]
