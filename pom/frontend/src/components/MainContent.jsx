@@ -28,6 +28,8 @@ import SampleSizeTimeStudy from "./SampleSizeTimeStudy";
 import SampleSizeTimeStudyModal from "./SampleSizeTimeStudyModal";
 import DecisionTable from "./DecisionTable";
 import DecisionTableModal from "./DecisionTableModal";
+import QuantityDiscountEOQ from "./QuantityDiscountEOQ";
+import QuantityDiscountEOQModal from "./QuantityDiscountEOQModal";
 
 import ReorderPointNormalDist from "./ReorderPointNormalDist";
 
@@ -68,6 +70,9 @@ function MainContent() {
 
   const [showDecisionTableModal, setShowDecisionTableModal] = useState(false);
   const [decisionTableConfig, setDecisionTableConfig] = useState(null);
+
+  const [showQuantityDiscountModal, setShowQuantityDiscountModal] = useState(false);
+  const [quantityDiscountConfig, setQuantityDiscountConfig] = useState(null);
 
   const [showKanbanModal, setShowKanbanModal] = useState(false);
   const [kanbanConfig, setKanbanConfig] = useState(null);
@@ -122,6 +127,12 @@ function MainContent() {
         setDecisionTableConfig(null)
         if (!selectedFile.id) {
           setShowDecisionTableModal(true)
+        }
+      }
+       else if (selectedFile.type === "quantity_discount_EOQ") {
+        setQuantityDiscountConfig(null)
+        if (!selectedFile.id) {
+          setShowQuantityDiscountModal(true)
         }
       }
   
@@ -237,6 +248,20 @@ function MainContent() {
       setSelectedKey(null);
     }
     setShowDecisionTableModal(false);
+  };
+
+  // Add Quantity Discount Study handler
+  const handleQuantityDiscountSetup = (config) => {
+    setQuantityDiscountConfig(config);
+    setShowQuantityDiscountModal(false);
+  };
+
+    // Add Regression Projector Modal close handler
+  const handleQuantityDiscountModalClose = () => {
+    if (!quantityDiscountConfig && selectedKey === "23") {
+      setSelectedKey(null);
+    }
+    setShowQuantityDiscountModal(false);
   };
 
   const handleCrossoverSetup = (config) => {
@@ -571,6 +596,27 @@ function MainContent() {
                 fileName={selectedFile.name}
                 setSelectedFile={setSelectedFile}
                 initialConfig={decisionTableConfig}
+              />
+            )}
+          </>
+        )}
+
+        {selectedFile?.type === "quantity_discount_EOQ" && (
+          <>
+            {showQuantityDiscountModal && (
+              <QuantityDiscountEOQModal
+                isVisible={true}
+                onClose={handleQuantityDiscountModalClose}
+                onConfirm={handleQuantityDiscountSetup}
+              />
+            )}
+
+            {!showQuantityDiscountModal && (
+              <QuantityDiscountEOQ
+                fileId={selectedFile.id}
+                fileName={selectedFile.name}
+                setSelectedFile={setSelectedFile}
+                initialConfig={quantityDiscountConfig}
               />
             )}
           </>

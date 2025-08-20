@@ -87,6 +87,11 @@ function FileManager() {
     type: "decision_table",
     title: "Decision Table File Manager"
   },
+    "23": {  // Add this configuration for Quantity Discount (EOQ) Model
+    endpoint: "/api/list_quantityDiscountEoq/", 
+    type: "quantity_discount_EOQ",
+    title: "Quantity Discount (EOQ) File Manager"
+  },
     };
 
     useEffect(() => {
@@ -124,6 +129,7 @@ function FileManager() {
   else if (selectedKey === "15") fileType = "samplesize_timestudy";
   else if (selectedKey === "20") fileType = "reorderpoint_normaldist";
   else if (selectedKey === "21") fileType = "decision_table";
+  else if (selectedKey === "23") fileType = "quantity_discount_EOQ";
   else fileType = "config"; // direct = BreakEven, config = PreferenceMatrix
 
         // Set selected file with the appropriate workflow type

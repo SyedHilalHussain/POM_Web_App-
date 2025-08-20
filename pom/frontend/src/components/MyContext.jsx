@@ -10,6 +10,7 @@ export const MyContextProvider = ({ children }) => {
   const [selectedFile, setSelectedFile] = useState(null);  // Tracks selected file
   const [showMultiProductModal, setShowMultiProductModal] = useState(false);
   const [showCrossoverModal, setShowCrossoverModal] = useState(false);
+  const [selectedModule, setSelectedModule] = useState(null)
   return (
     <MyContext.Provider value={{
       selectedKey,
@@ -21,7 +22,9 @@ export const MyContextProvider = ({ children }) => {
       showMultiProductModal,
       setShowMultiProductModal,
         showCrossoverModal,
-      setShowCrossoverModal
+      setShowCrossoverModal,
+      selectedModule, 
+      setSelectedModule
     }}>
       {children}
     </MyContext.Provider>
